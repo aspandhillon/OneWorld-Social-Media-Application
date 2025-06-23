@@ -1,10 +1,10 @@
-
+version: '3.8'
 
 services:
   frontend:
     build: ./frontend
     ports:
-      - "3000:3000"  
+      - "3000:3000"
     networks:
       - oneworld-network
 
@@ -14,9 +14,27 @@ services:
       - "5000:5000"
     networks:
       - oneworld-network
+    environment:
+      # THIS IS CRUCIAL: Points your backend to the Redis service within Docker Compose
+      REDIS_URL: "redis://redis:6379"
+      MONGO_URL: "mongodb+srv://oneworld:<Waspus09>@cluster0.ugwfwer.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" # Make sure to use your actual value here
+      JWT_SECRET: "22735716f47d62ab761d5efc4849583642385950a61d051eefd54ad83c9406a12c21d1bf82e147d65853459070a7d9fef4402521d0335dc0d1105b9873de84d9" # Make sure to use your actual value here
+      # ... other environment variables from your .env file ...
+    depends_on:
+      - redis # Ensure Redis starts before the backend
+
+  redis: # <-- NEW SERVICE DEFINITION FOR REDIS
+    image: redis:latest # Use the official Redis Docker image
+    ports:
+      - "6379:6379" # Maps the container's Redis port to your host machine's port (optional)
+    networks:
+      - oneworld-network # Connect Redis to the same network as your backend
     volumes:
-      - ./backend/.env:/app/.env
+      - redis_data:/data # Optional: for persistent Redis data (create a named volume below)
 
 networks:
   oneworld-network:
     driver: bridge
+
+volumes: # <-- NEW VOLUME DEFINITION (if you added the 'volumes' line to 'redis' service)
+  redis_data:
